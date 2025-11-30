@@ -1,0 +1,1144 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { 
+  LayoutDashboard, 
+  Headphones, 
+  BookOpen, 
+  PenTool, 
+  Mic, 
+  Settings, 
+  ChevronRight, 
+  ChevronLeft, 
+  Play, 
+  RotateCcw, 
+  X, 
+  CheckCircle2, 
+  AlertCircle, 
+  Clock, 
+  Trophy, 
+  Flame, 
+  Target, 
+  MoreVertical, 
+  Volume2, 
+  Menu, 
+  ArrowRight, 
+  ChevronDown, 
+  LogOut, 
+  Timer, 
+  Users, 
+  Calendar, 
+  Sparkles, 
+  Zap, 
+  GraduationCap, 
+  Baby, 
+  Plus, 
+  Trash2, 
+  History, 
+  Edit2, 
+  Save,  
+  XCircle, 
+  FileText, 
+  Info, 
+  List, 
+  Lightbulb, 
+  CheckSquare, 
+  Award, 
+  Book, 
+  Scale, 
+  Send, 
+  AlertTriangle, 
+  PartyPopper 
+} from 'lucide-react';
+
+// ==========================================
+// 1. CONSTANTS & DATA
+// ==========================================
+
+const STORAGE_KEYS = {
+    GOALS: 'ielts_pro_v1_goals',
+    BIRTH_DATE: 'ielts_pro_v1_birth_date',
+    TOTAL_TIME: 'ielts_pro_v1_total_time',
+    ACTIVE_USERS: 'ielts_pro_v1_active_users',
+    HOMEWORK: 'ielts_pro_v1_homework_calendar',
+    TRACKER_ROWS: 'ielts_pro_v1_tracker_rows',
+    TRACKER_DATA: 'ielts_pro_v1_tracker_data'
+};
+
+const NAMES_DB = [
+  "Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller", "Davis", 
+  "Rodriguez", "Martinez", "Hernandez", "Lopez", "Gonzalez", "Wilson", "Anderson", "Thomas"
+];
+
+const DEFAULT_TRACKER_ROWS = [
+    { id: 1, title: "Reading (30 min)" },
+    { id: 2, title: "Listening Practice" },
+    { id: 3, title: "New Vocabulary (10 ta)" },
+    { id: 4, title: "Speaking (Shadowing)" }
+];
+
+// GRAMMATIKA TUZILMASI
+const GRAMMAR_STRUCTURE = [
+    {
+        category: "I. Parts of Speech",
+        topics: [
+            "Noun – ot",
+            "Pronoun – olmosh",
+            "Adjective – sifat",
+            "Verb – fe’l",
+            "Adverb – ravish",
+            "Preposition – ko‘makchi so‘zlar",
+            "Conjunction – bog‘lovchi",
+            "Interjection – undov"
+        ]
+    },
+    {
+        category: "II. Tenses",
+        topics: [
+            "Present Simple",
+            "Present Continuous",
+            "Present Perfect",
+            "Present Perfect Continuous",
+            "Past Simple",
+            "Past Continuous",
+            "Past Perfect",
+            "Past Perfect Continuous",
+            "Future Simple",
+            "Future Continuous",
+            "Future Perfect",
+            "Future Perfect Continuous"
+        ]
+    },
+    {
+        category: "III. Sentence Types",
+        topics: [
+            "Simple sentence",
+            "Compound sentence",
+            "Complex sentence",
+            "Interrogative sentence",
+            "Negative sentence",
+            "Imperative sentence"
+        ]
+    },
+    {
+        category: "IV. Verb Forms and Structures",
+        topics: [
+            "Infinitive (to do)",
+            "Gerund (doing)",
+            "Bare infinitive (do)",
+            "Participles: Present & Past",
+            "Causative form",
+            "Passive voice",
+            "Modals",
+            "Conditional sentences",
+            "Reported speech",
+            "Question tags",
+            "Imperative form"
+        ]
+    },
+    {
+        category: "V. Comparison",
+        topics: [
+            "Positive degree",
+            "Comparative degree",
+            "Superlative degree",
+            "As...as / not as...as",
+            "The more..., the more..."
+        ]
+    },
+    {
+        category: "VI. Articles",
+        topics: [
+            "Indefinite article (a, an)",
+            "Definite article (the)",
+            "Zero article"
+        ]
+    },
+    {
+        category: "VII. Determiners & Quantifiers",
+        topics: [
+            "some / any / much / many",
+            "each / every / either / neither",
+            "all / both / none / most"
+        ]
+    },
+    {
+        category: "VIII. Pronouns",
+        topics: [
+            "Personal pronouns",
+            "Possessive pronouns",
+            "Reflexive pronouns",
+            "Relative pronouns",
+            "Demonstrative pronouns",
+            "Indefinite pronouns",
+            "Interrogative pronouns"
+        ]
+    },
+    {
+        category: "XII. Other Important Topics",
+        topics: [
+            "There is / there are",
+            "Have / have got",
+            "Used to / be used to",
+            "Time expressions",
+            "Phrasal verbs",
+            "Inversion"
+        ]
+    }
+];
+
+// PDF MAZMUNINI TO'LIQ KIRITILDI
+const PDF_TEXTS = {
+    NOUN: `OT / NOUN\n\nOtlar shaxslar, hayvonlar, joylar, narsalar, hodisalar va turli-tuman mavhum tushunchalarni ifodalovchi so'zlar boʻlib, Who? (kim?) va What? (nima?) so'roqlariga javob bo'ladi.\n\nSanaladigan va sanalmaydigan otlar:\nIngliz tilidagi otlar ham o'zbek tilidagi kabi oʻzi ifodalagan tushunchaga koʻra sanaladigan yoki sanalmaydigan otlarga boʻlinadi.\n\nSanaladigan otlar (Countable):\n- Birlik va ko'plik shakllariga ega.\n- a, an, one, many, few bilan keladi.\n\nSanalmaydigan otlar (Uncountable):\n- Faqat birlikda keladi.\n- much, some, amount of bilan keladi.\n\nAtoqli va turdosh otlar:\nAtoqli otlar (Proper Nouns) bosh harf bilan yoziladi (London, John). Qolganlari turdosh otlardir.\n\nJamlovchi otlar:\nBir guruhni ifodalaydi (family, team, army).\n\nKo'plik (Plural):\n-s yoki -es qo'shish orqali yasaladi (book-books, box-boxes). Noto'g'ri otlar: man-men, child-children.`,
+    
+    PRONOUN: `OLMOSHLAR / PRONOUNS\n\nOlmoshlar ot o'rnida ishlatiladigan so'zlar guruhidir.\n\nKishilik olmoshlari (Personal):\nI (Men), You (Siz), He (U-er), She (U-ayol), It (U-narsa), We (Biz), They (Ular).\n\nObyekt kelishik (Object Pronouns):\nme, you, him, her, it, us, them.\n\nEgalik olmoshlari (Possessive):\nmy, your, his, her, its, our, their (Aniqlovchi).\nmine, yours, his, hers, its, ours, theirs (Mutlaq).`,
+    
+    ADJECTIVE: `SIFAT / ADJECTIVE\n\nSifat otning belgisini bildiradi. Ingliz tilida sifatlar turlanmaydi.\n\nSifat darajalari:\n1. Oddiy (Positive): big, interesting.\n2. Qiyosiy (Comparative): bigger, more interesting.\n3. Orttirma (Superlative): the biggest, the most interesting.`,
+    
+    VERB: `FE'L / VERB\n\nFe'l ish-harakat yoki holatni bildiradi. Fe'llar to'g'ri (regular) va noto'g'ri (irregular) bo'lishi mumkin.\nTo'g'ri fe'llar o'tgan zamonda -ed oladi (work-worked).\nNoto'g'ri fe'llar o'zagi o'zgaradi (go-went, see-saw).`,
+    
+    PREPOSITION: `PREDLOGLAR / PREPOSITIONS\n\nPayt predloglari:\n- at: soat (at 5 o'clock), tun (at night).\n- on: kunlar (on Monday), sanalar (on May 1st).\n- in: oy (in May), yil (in 2025), fasl (in summer).\n\nMakon predloglari:\n- in (ichida), on (ustida), at (yonida), under (tagida), between (orasida), behind (orqasida).`,
+    
+    ARTICLES: `ARTIKLLAR / ARTICLES\n\n1. Noaniq artikl (a/an):\n- a: undosh tovush oldidan (a book).\n- an: unli tovush oldidan (an apple).\nBirlikdagi sanaladigan otlar bilan ishlatiladi.\n\n2. Aniq artikl (the):\nSo'zlovchi va tinglovchiga ma'lum bo'lgan narsa haqida gapirilganda. Dunyoda yagona narsalar oldidan (the sun, the moon).`,
+    
+    TENSES_PRESENT_SIMPLE: `ODDIY HOZIRGI ZAMON (Present Simple)\n\nIshlatilishi:\n1. Doimiy holat (I live in Tashkent).\n2. Haqiqat (The sun rises in the east).\n3. Odat tusiga kirgan harakat (I get up at 7).\n\nFormula: S + V (3-shaxsda V+s/es).\nInkor: do not / does not.\nSo'roq: Do / Does ...?`,
+    
+    TENSES_PRESENT_CONT: `HOZIRGI DAVOMLI ZAMON (Present Continuous)\n\nIshlatilishi: Ayni paytda sodir bo'layotgan ish-harakat.\nFormula: S + am/is/are + V-ing.\nMisol: I am reading now.`,
+    
+    TENSES_PAST_SIMPLE: `ODDIY O'TGAN ZAMON (Past Simple)\n\nIshlatilishi: O'tmishda tugagan harakat.\nFormula: S + V2 (yoki V+ed).\nInkor: did not.\nSo'roq: Did ...?\nMisol: I went to school yesterday.`,
+    
+    TENSES_FUTURE_SIMPLE: `ODDIY KELASI ZAMON (Future Simple)\n\nIshlatilishi: Kelajakdagi harakatlar.\nFormula: S + will + V.\nMisol: I will go tomorrow.`,
+    
+    PASSIVE: `MAJHUL NISBAT (Passive Voice)\n\nFormula: to be + V3.\nEga ish-harakatni bajaruvchi emas, qabul qiluvchi bo'ladi.\nActive: Ali wrote the letter.\nPassive: The letter was written by Ali.`,
+    
+    MODALS: `MODAL FE'LLAR (Modals)\n\n- Can: qila olmoq.\n- May: mumkin.\n- Must: shart.\n- Should: maslahat.\n- Have to: majbur bo'lmoq.\n\nInkor shakllari: cannot, must not, should not.`,
+    
+    CONDITIONALS: `SHART ERGASH GAPLAR (Conditionals)\n\nZero Conditional: If + Present, Present (Faktlar).\n1st Conditional: If + Present, Future (Real kelajak).\n2nd Conditional: If + Past, would + V (Noreal hozirgi).\n3rd Conditional: If + Past Perfect, would have + V3 (Noreal o'tmish).`,
+    
+    THERE_IS: `THERE IS / THERE ARE\n\nBiror joyda biror narsaning borligini bildiradi.\n- There is a book on the table.\n- There are books on the table.\nInkor: There isn't / There aren't.`,
+    
+    HAVE_GOT: `HAVE / HAVE GOT\n\n"Bor", "Ega bo'lmoq" ma'nosida.\nI have a car = I have got a car.\nInkor: I haven't got a car.`
+};
+
+// MAVZULARNI MAZMUNGA BOG'LASH
+const GRAMMAR_CONTENT_MAP = {
+    "Noun – ot": PDF_TEXTS.NOUN,
+    "Pronoun – olmosh": PDF_TEXTS.PRONOUN,
+    "Adjective – sifat": PDF_TEXTS.ADJECTIVE,
+    "Verb – fe’l": PDF_TEXTS.VERB,
+    "Preposition – ko‘makchi so‘zlar": PDF_TEXTS.PREPOSITION,
+    "Conjunction – bog‘lovchi": "Bog'lovchilar (Conjunctions) so'z va gaplarni bog'laydi: and, but, or.",
+    "Present Simple": PDF_TEXTS.TENSES_PRESENT_SIMPLE,
+    "Present Continuous": PDF_TEXTS.TENSES_PRESENT_CONT,
+    "Present Perfect": "The Present Perfect Tense (Hozirgi natijali zamon).\nFormula: have/has + V3.\nIshlatilishi: O'tmishda boshlanib, natijasi hozir ko'rinib turgan harakat (I have finished).",
+    "Past Simple": PDF_TEXTS.TENSES_PAST_SIMPLE,
+    "Past Continuous": "The Past Continuous Tense.\nFormula: was/were + V-ing.\nIshlatilishi: O'tmishda ma'lum vaqtda davom etayotgan harakat (I was reading at 5 yesterday).",
+    "Future Simple": PDF_TEXTS.TENSES_FUTURE_SIMPLE,
+    "Passive voice": PDF_TEXTS.PASSIVE,
+    "Modals": PDF_TEXTS.MODALS,
+    "Conditional sentences": PDF_TEXTS.CONDITIONALS,
+    "Indefinite article (a, an)": PDF_TEXTS.ARTICLES,
+    "Definite article (the)": PDF_TEXTS.ARTICLES,
+    "There is / there are": PDF_TEXTS.THERE_IS,
+    "Have / have got": PDF_TEXTS.HAVE_GOT,
+    "Imperative sentence": "Buyruq gaplar. Fe'l bilan boshlanadi (Open the door).",
+    "Infinitive (to do)": "To + V (I want to go).",
+    "Gerund (doing)": "V-ing (I like swimming).",
+    "Personal pronouns": PDF_TEXTS.PRONOUN,
+    "Possessive pronouns": "my, your, his, her... / mine, yours, his, hers...",
+    "Positive degree": "Sifatning oddiy darajasi (big, small).",
+    "Comparative degree": "Qiyosiy daraja (-er, more).",
+    "Superlative degree": "Orttirma daraja (the ... -est, the most ...)."
+};
+
+const IELTS_INFO = {
+    listening: {
+        id: 'listening',
+        title: "IELTS Listening (Tinglab tushunish)",
+        color: "blue",
+        icon: Headphones,
+        duration: "30 daqiqa + 10 daqiqa (javoblarni ko'chirish uchun)",
+        questions: "40 ta savol (har biri 1 ball)",
+        overview: "IELTS Listening imtihoni nomzodning og'zaki ingliz tilini, jumladan, asosiy g'oyalarni tushunish, batafsil ma'lumotlarni ilg'ash, so'zlovchining fikri va munosabatini aniqlash qobiliyatini baholaydi. Barcha 4 qism faqat BIR marta eshittiriladi. Turli xil ingliz lahjalari (Britaniya, Avstraliya, Amerika, Yangi Zelandiya) ishlatiladi.",
+        structure: [
+            { title: "Part 1: Ijtimoiy Dialog", desc: "Ikki kishi o'rtasidagi kundalik hayotiy suhbat (masalan, mehmonxona band qilish, sayohatni rejalashtirish). Asosan faktik ma'lumotlarni (ism, raqam, sana) to'ldirish talab etiladi." },
+            { title: "Part 2: Ijtimoiy Monolog", desc: "Bir kishining umumiy ijtimoiy mavzudagi nutqi (masalan, mahalliy qulayliklar haqida, muzeyga yo'riqnoma). Matnni tushunish va xaritada joylashuvni aniqlash kabi vazifalar bo'lishi mumkin." },
+            { title: "Part 3: Akademik Suhbat", desc: "Ta'lim yoki o'quv mavzusida 4 kishigacha bo'lgan suhbat (masalan, o'qituvchi va talaba o'rtasida dissertatsiya muhokamasi). Fikrlar almashinuvi va argumentlarni tushunish muhim." },
+            { title: "Part 4: Akademik Ma'ruza", desc: "Ilmiy yoki akademik mavzudagi monolog (masalan, universitet ma'ruzasi). Mavzu chuqurroq bo'lib, abstrakt g'oyalar va ilmiy atamalar ishlatilishi mumkin." }
+        ],
+        tips: [
+            "Savollarni oldindan o'qib olishga ulguring. Kalit so'zlarni (keywords) tagiga chizing.",
+            "Javoblarni savol varaqasiga yozib boring, oxirida javob varaqasiga ko'chirish uchun 10 daqiqa beriladi.",
+            "Sinonimlarni va 'paraphrasing'ni kuting. Audioda savoldagi so'zlar aynan ishlatilmasligi mumkin.",
+            "Singular/Plural (birlik/ko'plik) shakllariga juda e'tiborli bo'ling. 'S' tushib qolsa, javob xato hisoblanadi.",
+            "Agar biror savolga javob topa olmasangiz, vahima qilmang va keyingisiga o'ting."
+        ],
+        scoring: [
+            { range: "39 - 40", score: "9.0" }, { range: "37 - 38", score: "8.5" }, { range: "35 - 36", score: "8.0" }, 
+            { range: "32 - 34", score: "7.5" }, { range: "30 - 31", score: "7.0" }, { range: "26 - 29", score: "6.5" }, 
+            { range: "23 - 25", score: "6.0" }, { range: "18 - 22", score: "5.5" }, { range: "16 - 17", score: "5.0" }, 
+            { range: "13 - 15", score: "4.5" }, { range: "10 - 12", score: "4.0" },
+        ]
+    },
+    reading: {
+        id: 'reading',
+        title: "IELTS Academic Reading (O'qib tushunish)",
+        color: "emerald",
+        icon: BookOpen,
+        duration: "60 daqiqa (javoblarni ko'chirish uchun qo'shimcha vaqt berilmaydi)",
+        questions: "40 ta savol (har biri 1 ball)",
+        overview: "IELTS Academic Reading testi nomzodning murakkab akademik matnlarni tushunish, asosiy g'oyalarni ajratib olish, detallarni payqash va mantiqiy xulosa chiqarish qobiliyatini tekshiradi. Matnlar ilmiy-ommabop uslubda bo'ladi.",
+        structure: [
+            { title: "Passage 1", desc: "Odatda tasvirlash (descriptive) xarakteriga ega bo'lgan, nisbatan osonroq matn." },
+            { title: "Passage 2", desc: "O'rtacha qiyinlikdagi, muammo va yechimga, yoki munozaraga oid matn bo'lishi mumkin." },
+            { title: "Passage 3", desc: "Eng qiyin, mantiqiy argumentlarga boy, mavhumroq va analitik matn." }
+        ],
+        tips: [
+            "Vaqtni to'g'ri taqsimlang: Passage 1 uchun 15 min, Passage 2 uchun 20 min, Passage 3 uchun 25 min.",
+            "Javoblarni darhol javob varaqasiga yozib boring. Qo'shimcha vaqt berilmaydi.",
+            "Skimming va Scanning texnikalarini mukammal o'zlashtiring.",
+            "True/False/Not Given va Yes/No/Not Given farqini aniq tushuning.",
+            "Noma'lum so'zlarga to'xtalib qolmang, kontekstdan ma'nosini chiqarishga harakat qiling."
+        ],
+        scoring: [
+            { range: "39 - 40", score: "9.0" }, { range: "37 - 38", score: "8.5" }, { range: "35 - 36", score: "8.0" }, 
+            { range: "33 - 34", score: "7.5" }, { range: "30 - 32", score: "7.0" }, { range: "27 - 29", score: "6.5" }, 
+            { range: "23 - 26", score: "6.0" }, { range: "19 - 22", score: "5.5" }, { range: "15 - 18", score: "5.0" }, 
+            { range: "13 - 14", score: "4.5" }, { range: "10 - 12", score: "4.0" },
+        ]
+    },
+    writing: {
+        id: 'writing',
+        title: "IELTS Writing (Yozma ko'nikma)",
+        color: "orange",
+        icon: PenTool,
+        duration: "60 daqiqa",
+        questions: "2 ta topshiriq (Task 1 va Task 2)",
+        overview: "IELTS Writing testi nomzodning o'z fikrlarini yozma ravishda aniq, mantiqiy va grammatik jihatdan to'g'ri ifodalash qobiliyatini baholaydi. Task 2 (Essay) Task 1 ga qaraganda ikki barobar ko'proq ball beradi.",
+        structure: [
+            { title: "Task 1 (Hisobot)", desc: "20 daqiqa | Kamida 150 so'z. Grafik, jadval, diagramma yoki xaritani tasvirlash." },
+            { title: "Task 2 (Esse)", desc: "40 daqiqa | Kamida 250 so'z. Berilgan muammo, fikr yoki argument bo'yicha esse yozish." }
+        ],
+        tips: [
+            "Vaqtga qat'iy amal qiling: Task 1 uchun 20 daqiqa, Task 2 uchun 40 daqiqa.",
+            "Har doim reja tuzing (Planning). Yozishdan oldin 2-3 daqiqa fikrlarni jamlang.",
+            "Paragraflarga ajrating (Introduction, Body, Conclusion).",
+            "Turli xil grammatik strukturalar va boy lug'at boyligidan foydalaning."
+        ],
+        criteria: [
+            { name: "Task Achievement/Response", desc: "Savolga to'liq va to'g'ri javob berilganligi." },
+            { name: "Coherence & Cohesion", desc: "Fikrlarning mantiqiy ketma-ketligi." },
+            { name: "Lexical Resource", desc: "So'z boyligi, so'zlarning aniq va o'rinli ishlatilishi." },
+            { name: "Grammatical Range & Accuracy", desc: "Grammatik xilma-xillik va to'g'rilik." }
+        ]
+    },
+    speaking: {
+        id: 'speaking',
+        title: "IELTS Speaking (Og'zaki nutq)",
+        color: "purple",
+        icon: Mic,
+        duration: "11-14 daqiqa",
+        questions: "3 qism (Yuzma-yuz suhbat)",
+        overview: "IELTS Speaking testi imtihon oluvchi (examiner) bilan jonli suhbat tarzida o'tadi. Bu bo'lim nomzodning ingliz tilida ravon, tushunarli va grammatik jihatdan to'g'ri gapira olishini tekshiradi.",
+        structure: [
+            { title: "Part 1: Introduction & Interview", desc: "4-5 daqiqa. O'zingiz, uyingiz, ishingiz/o'qishingiz haqida umumiy savollar." },
+            { title: "Part 2: Long Turn (Cue Card)", desc: "3-4 daqiqa. Karta (Cue Card) beriladi. 1 daqiqa tayyorlanish, 2 daqiqa gapirish." },
+            { title: "Part 3: Discussion", desc: "4-5 daqiqa. Part 2 mavzusiga aloqador, lekin chuqurroq va abstrakt savollar." }
+        ],
+        tips: [
+            "Gapirishdan to'xtab qolmang. Jimlik - dushman.",
+            "Javoblarni kengaytiring (Doim 'Nega?' degan savolga javob bering).",
+            "Turli xil grammatik zamonlar va strukturalarni ishlating.",
+            "Xato qilsangiz, to'g'rilab keting, bu sizning xatoni bilishingizni ko'rsatadi."
+        ],
+        criteria: [
+            { name: "Fluency and Coherence", desc: "Nutqning ravonligi, tezligi va fikrlarning bog'liqligi." },
+            { name: "Lexical Resource", desc: "So'z boyligi. Aniq va mavzuga mos so'zlarni ishlata olish." },
+            { name: "Grammatical Range and Accuracy", desc: "Grammatik to'g'rilik." },
+            { name: "Pronunciation", desc: "Talaffuzning tushunarliligi, intonatsiya." }
+        ]
+    }
+};
+
+const GRAMMAR_STRUCTURE = [
+    {
+        category: "I. Parts of Speech",
+        topics: [
+            "Noun – ot", "Pronoun – olmosh", "Adjective – sifat", "Verb – fe’l",
+            "Adverb – ravish", "Preposition – ko‘makchi so‘zlar",
+            "Conjunction – bog‘lovchi", "Interjection – undov"
+        ]
+    },
+    {
+        category: "II. Tenses",
+        topics: [
+            "Present Simple", "Present Continuous", "Present Perfect", "Present Perfect Continuous",
+            "Past Simple", "Past Continuous", "Past Perfect", "Past Perfect Continuous",
+            "Future Simple", "Future Continuous", "Future Perfect", "Future Perfect Continuous"
+        ]
+    },
+    {
+        category: "III. Sentence Types",
+        topics: [
+            "Simple sentence", "Compound sentence", "Complex sentence",
+            "Interrogative sentence", "Negative sentence", "Imperative sentence"
+        ]
+    },
+    {
+        category: "IV. Verb Forms and Structures",
+        topics: [
+            "Infinitive (to do)", "Gerund (doing)", "Bare infinitive (do)",
+            "Participles: Present & Past", "Causative form", "Passive voice",
+            "Modals", "Conditional sentences", "Reported speech", "Question tags"
+        ]
+    },
+    {
+        category: "V. Comparison",
+        topics: [ "Positive degree", "Comparative degree", "Superlative degree", "As...as / not as...as", "The more..., the more..." ]
+    },
+    {
+        category: "VI. Articles",
+        topics: [ "Indefinite article (a, an)", "Definite article (the)", "Zero article" ]
+    },
+    {
+        category: "VII. Determiners & Quantifiers",
+        topics: [ "some / any / much / many", "each / every / either / neither", "all / both / none / most" ]
+    },
+    {
+        category: "VIII. Pronouns",
+        topics: [ "Personal pronouns", "Possessive pronouns", "Reflexive pronouns", "Relative pronouns", "Demonstrative pronouns", "Indefinite pronouns", "Interrogative pronouns" ]
+    },
+    {
+        category: "XII. Other Important Topics",
+        topics: [ "There is / there are", "Have / have got", "Used to / be used to", "Time expressions", "Phrasal verbs", "Inversion" ]
+    }
+];
+
+const PDF_TEXTS = {
+    NOUN: `OT / NOUN\n\nOtlar shaxslar, hayvonlar, joylar, narsalar, hodisalar va turli-tuman mavhum tushunchalarni ifodalovchi so'zlar boʻlib, Who? (kim?) va What? (nima?) so'roqlariga javob bo'ladi.\n\nSanaladigan va sanalmaydigan otlar:\nIngliz tilidagi otlar ham o'zbek tilidagi kabi oʻzi ifodalagan tushunchaga koʻra sanaladigan yoki sanalmaydigan otlarga boʻlinadi.\n\nSanaladigan otlar (Countable):\n- Birlik va ko'plik shakllariga ega.\n- a, an, one, many, few bilan keladi.\n\nSanalmaydigan otlar (Uncountable):\n- Faqat birlikda keladi.\n- much, some, amount of bilan keladi.\n\nAtoqli va turdosh otlar:\nAtoqli otlar (Proper Nouns) bosh harf bilan yoziladi (London, John). Qolganlari turdosh otlardir.\n\nJamlovchi otlar:\nBir guruhni ifodalaydi (family, team, army).\n\nKo'plik (Plural):\n-s yoki -es qo'shish orqali yasaladi (book-books, box-boxes). Noto'g'ri otlar: man-men, child-children.`,
+    PRONOUN: `OLMOSHLAR / PRONOUNS\n\nOlmoshlar ot o'rnida ishlatiladigan so'zlar guruhidir.\n\nKishilik olmoshlari (Personal):\nI (Men), You (Siz), He (U-er), She (U-ayol), It (U-narsa), We (Biz), They (Ular).\n\nObyekt kelishik (Object Pronouns):\nme, you, him, her, it, us, them.\n\nEgalik olmoshlari (Possessive):\nmy, your, his, her, its, our, their (Aniqlovchi).\nmine, yours, his, hers, its, ours, theirs (Mutlaq).`,
+    ADJECTIVE: `SIFAT / ADJECTIVE\n\nSifat otning belgisini bildiradi. Ingliz tilida sifatlar turlanmaydi.\n\nSifat darajalari:\n1. Oddiy (Positive): big, interesting.\n2. Qiyosiy (Comparative): bigger, more interesting.\n3. Orttirma (Superlative): the biggest, the most interesting.`,
+    VERB: `FE'L / VERB\n\nFe'l ish-harakat yoki holatni bildiradi. Fe'llar to'g'ri (regular) va noto'g'ri (irregular) bo'lishi mumkin.\nTo'g'ri fe'llar o'tgan zamonda -ed oladi (work-worked).\nNoto'g'ri fe'llar o'zagi o'zgaradi (go-went, see-saw).`,
+    PREPOSITION: `PREDLOGLAR / PREPOSITIONS\n\nPayt predloglari:\n- at: soat (at 5 o'clock), tun (at night).\n- on: kunlar (on Monday), sanalar (on May 1st).\n- in: oy (in May), yil (in 2025), fasl (in summer).\n\nMakon predloglari:\n- in (ichida), on (ustida), at (yonida), under (tagida), between (orasida), behind (orqasida).`,
+    ARTICLES: `ARTIKLLAR / ARTICLES\n\n1. Noaniq artikl (a/an):\n- a: undosh tovush oldidan (a book).\n- an: unli tovush oldidan (an apple).\nBirlikdagi sanaladigan otlar bilan ishlatiladi.\n\n2. Aniq artikl (the):\nSo'zlovchi va tinglovchiga ma'lum bo'lgan narsa haqida gapirilganda. Dunyoda yagona narsalar oldidan (the sun, the moon).`,
+    TENSES_PRESENT_SIMPLE: `ODDIY HOZIRGI ZAMON (Present Simple)\n\nIshlatilishi:\n1. Doimiy holat (I live in Tashkent).\n2. Haqiqat (The sun rises in the east).\n3. Odat tusiga kirgan harakat (I get up at 7).\n\nFormula: S + V (3-shaxsda V+s/es).\nInkor: do not / does not.\nSo'roq: Do / Does ...?`,
+    TENSES_PRESENT_CONT: `HOZIRGI DAVOMLI ZAMON (Present Continuous)\n\nIshlatilishi: Ayni paytda sodir bo'layotgan ish-harakat.\nFormula: S + am/is/are + V-ing.\nMisol: I am reading now.`,
+    TENSES_PAST_SIMPLE: `ODDIY O'TGAN ZAMON (Past Simple)\n\nIshlatilishi: O'tmishda tugagan harakat.\nFormula: S + V2 (yoki V+ed).\nInkor: did not.\nSo'roq: Did ...?\nMisol: I went to school yesterday.`,
+    TENSES_FUTURE_SIMPLE: `ODDIY KELASI ZAMON (Future Simple)\n\nIshlatilishi: Kelajakdagi harakatlar.\nFormula: S + will + V.\nMisol: I will go tomorrow.`,
+    PASSIVE: `MAJHUL NISBAT (Passive Voice)\n\nFormula: to be + V3.\nEga ish-harakatni bajaruvchi emas, qabul qiluvchi bo'ladi.\nActive: Ali wrote the letter.\nPassive: The letter was written by Ali.`,
+    MODALS: `MODAL FE'LLAR (Modals)\n\n- Can: qila olmoq.\n- May: mumkin.\n- Must: shart.\n- Should: maslahat.\n- Have to: majbur bo'lmoq.`,
+    CONDITIONALS: `SHART ERGASH GAPLAR (Conditionals)\n\nZero Conditional: If + Present, Present (Faktlar).\n1st Conditional: If + Present, Future (Real kelajak).\n2nd Conditional: If + Past, would + V (Noreal hozirgi).\n3rd Conditional: If + Past Perfect, would have + V3 (Noreal o'tmish).`,
+    THERE_IS: `THERE IS / THERE ARE\n\nBorlikni bildiradi.\nBirlik: There is a book on the table.\nKo'plik: There are books on the table.`,
+    HAVE_GOT: `HAVE / HAVE GOT\n\n"Bor", "Ega bo'lmoq" ma'nosida.\nI have a car = I have got a car.\nInkor: I haven't got a car.`
+};
+
+// MAVZULARNI MAZMUNGA BOG'LASH
+const GRAMMAR_CONTENT_MAP = {
+    "Noun – ot": PDF_TEXTS.NOUN,
+    "Pronoun – olmosh": PDF_TEXTS.PRONOUN,
+    "Adjective – sifat": PDF_TEXTS.ADJECTIVE,
+    "Verb – fe’l": PDF_TEXTS.VERB,
+    "Preposition – ko‘makchi so‘zlar": PDF_TEXTS.PREPOSITION,
+    "Conjunction – bog‘lovchi": "Bog'lovchilar (Conjunctions) so'z va gaplarni bog'laydi: and, but, or.",
+    "Present Simple": PDF_TEXTS.TENSES_PRESENT_SIMPLE,
+    "Present Continuous": PDF_TEXTS.TENSES_PRESENT_CONT,
+    "Past Simple": PDF_TEXTS.TENSES_PAST_SIMPLE,
+    "Future Simple": PDF_TEXTS.TENSES_FUTURE_SIMPLE,
+    "Passive voice": PDF_TEXTS.PASSIVE,
+    "Modals": PDF_TEXTS.MODALS,
+    "Conditional sentences": PDF_TEXTS.CONDITIONALS,
+    "Indefinite article (a, an)": PDF_TEXTS.ARTICLES,
+    "Definite article (the)": PDF_TEXTS.ARTICLES,
+    "There is / there are": PDF_TEXTS.THERE_IS,
+    "Have / have got": PDF_TEXTS.HAVE_GOT,
+    "Imperative sentence": "Buyruq gaplar. Fe'l bilan boshlanadi (Open the door).",
+    "Infinitive (to do)": "Infinitiv - fe'lning 'to' bilan kelgan shakli (to go, to work). Maqsadni ifodalashda ishlatiladi.",
+    "Gerund (doing)": "V-ing (I like swimming).",
+    "Personal pronouns": PDF_TEXTS.PRONOUN,
+    "Possessive pronouns": "my, your, his, her... / mine, yours, his, hers...",
+    "Positive degree": "Sifatning oddiy darajasi (big, small).",
+    "Comparative degree": "Qiyosiy daraja (-er, more).",
+    "Superlative degree": "Orttirma daraja (the ... -est, the most ...)."
+};
+
+// --- 3. HELPER FUNCTIONS ---
+
+const speak = (text, rate = 1) => {
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'en-GB'; 
+    utterance.rate = rate;
+    window.speechSynthesis.speak(utterance);
+  }
+};
+
+const randomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+
+const formatCountdown = (diff) => {
+    if (diff <= 0) return "MUDDAT TUGADI!";
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const pad = (num) => String(num).padStart(2, '0');
+    return `${days} kun ${pad(hours)}:${pad(minutes)}`;
+};
+
+const calculateLifeTime = (birthDateString) => {
+    if (!birthDateString) return null;
+    const now = new Date();
+    const birth = new Date(birthDateString);
+    let years = now.getFullYear() - birth.getFullYear();
+    let months = now.getMonth() - birth.getMonth();
+    let days = now.getDate() - birth.getDate();
+    if (months < 0 || (months === 0 && days < 0)) { years--; months += 12; }
+    if (days < 0) { const prevMonth = new Date(now.getFullYear(), now.getMonth(), 0); days += prevMonth.getDate(); months--; }
+    const hours = now.getHours();
+    const minutes = now.getMinutes();
+    const seconds = now.getSeconds();
+    return { years, months, days, hours, minutes, seconds };
+};
+
+const formatSecondsToTime = (totalSeconds) => {
+    const hours = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
+    const minutes = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
+    const seconds = (totalSeconds % 60).toString().padStart(2, '0');
+    return `${hours}:${minutes}:${seconds}`;
+};
+
+const getTodayString = () => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
+
+const formatDateDisplay = (dateString) => {
+    if (!dateString) return "";
+    const [y, m, d] = dateString.split('-').map(Number);
+    const localDate = new Date(y, m - 1, d);
+    const months = ["Yanvar", "Fevral", "Mart", "Aprel", "May", "Iyun", "Iyul", "Avgust", "Sentyabr", "Oktyabr", "Noyabr", "Dekabr"];
+    const weekDays = ["Yakshanba", "Dushanba", "Seshanba", "Chorshanba", "Payshanba", "Juma", "Shanba"];
+    return `${weekDays[localDate.getDay()]}, ${d}-${months[m - 1]}, ${y}`;
+};
+
+const exponentialBackoffFetch = async (url, options, maxRetries = 5) => {
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+        try {
+            const response = await fetch(url, options);
+            if (response.status !== 429) {
+                return response;
+            }
+            await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000 + Math.random() * 1000));
+        } catch (error) {
+            await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000 + Math.random() * 1000));
+        }
+    }
+    throw new Error('Max retries exceeded for API call.');
+};
+
+// --- 4. UI COMPONENTS ---
+
+const Card = ({ children, className = "", onClick }) => (
+  <div onClick={onClick} className={`bg-white rounded-2xl border border-slate-100 shadow-sm ${className}`}>
+    {children}
+  </div>
+);
+
+const Button = ({ children, onClick, variant = "primary", className = "", disabled = false, icon: Icon }) => {
+  const variants = {
+    primary: "bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-200 shadow-md",
+    secondary: "bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 hover:border-slate-300",
+    success: "bg-emerald-500 text-white hover:bg-emerald-600 shadow-emerald-200 shadow-md",
+    danger: "bg-rose-500 text-white hover:bg-rose-600 shadow-rose-200 shadow-md",
+    ghost: "bg-transparent text-slate-500 hover:bg-slate-100"
+  };
+  return (
+    <button 
+      onClick={onClick}
+      disabled={disabled}
+      className={`px-4 py-2 rounded-xl font-bold text-sm transition-all duration-200 flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${variants[variant]} ${className}`}
+    >
+      {Icon && <Icon size={16} />}
+      {children}
+    </button>
+  );
+};
+
+const ProgressBar = ({ progress, color = "bg-indigo-500" }) => (
+  <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+    <div className={`h-full ${color} transition-all duration-500`} style={{ width: `${progress}%` }}></div>
+  </div>
+);
+
+const Confetti = ({ active }) => {
+    if (!active) return null;
+    return (
+        <div className="fixed inset-0 pointer-events-none z-[200] overflow-hidden">
+            {[...Array(50)].map((_, i) => (
+                <div 
+                    key={i}
+                    className="absolute w-2 h-2 rounded-full animate-confetti"
+                    style={{
+                        left: `${Math.random() * 100}%`,
+                        top: `-10px`,
+                        backgroundColor: ['#FFC700', '#FF0000', '#2E3192', '#41BBC7'][Math.floor(Math.random() * 4)],
+                        animationDuration: `${Math.random() * 3 + 2}s`,
+                        animationDelay: `${Math.random() * 2}s`
+                    }}
+                />
+            ))}
+            <style>{`
+                @keyframes confetti {
+                    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+                    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+                }
+                .animate-confetti {
+                    animation-name: confetti;
+                    animation-timing-function: linear;
+                    animation-fill-mode: forwards;
+                }
+            `}</style>
+        </div>
+    );
+};
+
+// --- 5. MODALS & SECTIONS ---
+
+const GrammarReader = ({ topicTitle, content, onClose }) => {
+    return (
+        <div className="fixed inset-0 z-[200] bg-slate-50 animate-in slide-in-from-right duration-300 flex flex-col">
+            {/* Header */}
+            <div className="bg-white border-b border-slate-200 p-4 shadow-sm flex items-center justify-between sticky top-0 z-10">
+                <div className="flex items-center gap-3">
+                    <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full text-slate-600 transition-colors">
+                        <ArrowRight className="rotate-180" size={24} />
+                    </button>
+                    <h2 className="text-xl font-bold text-slate-900 truncate max-w-xs sm:max-w-md md:max-w-xl">{topicTitle}</h2>
+                </div>
+                <button onClick={onClose} className="p-2 bg-slate-100 hover:bg-slate-200 rounded-full text-slate-600">
+                    <X size={20} />
+                </button>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-6 lg:p-10 max-w-5xl mx-auto w-full">
+                <div className="bg-white rounded-3xl p-8 lg:p-12 shadow-sm border border-slate-200 prose prose-slate lg:prose-lg max-w-none">
+                    <h1 className="text-3xl font-bold text-indigo-700 mb-6 border-b pb-4">{topicTitle}</h1>
+                    <div className="text-slate-700 leading-relaxed whitespace-pre-wrap font-serif text-lg">
+                        {content ? content : (
+                            <div className="flex flex-col items-center justify-center py-20 text-slate-400 bg-slate-50 rounded-xl border border-dashed border-slate-300">
+                                <Book size={48} className="mb-4 opacity-50" />
+                                <p className="font-medium">Ma'lumot tayyorlanmoqda...</p>
+                                <p className="text-xs mt-2 text-slate-400">Bu mavzu bo'yicha ma'lumot tez orada qo'shiladi.</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+                <div className="h-20"></div>
+            </div>
+        </div>
+    );
+};
+
+const MonthlyTracker = ({ selectedDate }) => {
+    if (!selectedDate) return null;
+    const [y, m, d] = selectedDate.split('-').map(Number);
+    const year = y;
+    const month = m - 1;
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    
+    const [rows, setRows] = useState(() => {
+        const saved = localStorage.getItem(STORAGE_KEYS.TRACKER_ROWS);
+        return saved ? JSON.parse(saved) : DEFAULT_TRACKER_ROWS;
+    });
+    const [trackerData, setTrackerData] = useState(() => {
+        const saved = localStorage.getItem(STORAGE_KEYS.TRACKER_DATA);
+        return saved ? JSON.parse(saved) : {};
+    });
+    const [newRowTitle, setNewRowTitle] = useState("");
+
+    useEffect(() => { localStorage.setItem(STORAGE_KEYS.TRACKER_ROWS, JSON.stringify(rows)); }, [rows]);
+    useEffect(() => { localStorage.setItem(STORAGE_KEYS.TRACKER_DATA, JSON.stringify(trackerData)); }, [trackerData]);
+
+    const handleCellClick = (rowId, day) => {
+        const todayStr = getTodayString();
+        const [ty, tm, td] = todayStr.split('-').map(Number);
+        const today = new Date(ty, tm - 1, td);
+        const cellDate = new Date(year, month, day);
+        const diffTime = today - cellDate;
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+        if (diffDays > 2) { alert("Siz 2 kundan oldingi vazifalarni o'zgartira olmaysiz!"); return; }
+        if (diffDays > 0 && diffDays <= 2) {
+            if (!confirm("Diqqat! Siz o'tib ketgan kun uchun vazifani o'zgartiryapsiz. Davom etasizmi?")) return;
+        }
+
+        const key = `${rowId}-${year}-${month}-${day}`;
+        const currentStatus = trackerData[key];
+        let newStatus = !currentStatus ? 'done' : (currentStatus === 'done' ? 'missed' : null);
+        setTrackerData(prev => {
+            const next = { ...prev };
+            if (newStatus) next[key] = newStatus; else delete next[key];
+            return next;
+        });
+    };
+
+    const addRow = () => { if (!newRowTitle.trim()) return; setRows([...rows, { id: Date.now(), title: newRowTitle }]); setNewRowTitle(""); };
+    const deleteRow = (id) => { if (confirm("Bu qatorni o'chirmoqchimisiz?")) setRows(prev => prev.filter(r => r.id !== id)); };
+
+    return (
+        <div className="mt-8 bg-[#1e293b] rounded-3xl p-6 shadow-lg overflow-hidden text-slate-200">
+            <div className="flex justify-between items-center mb-6"><h3 className="text-xl font-bold text-white flex items-center gap-2"><Target className="text-emerald-400" /> Oylik Tracker</h3></div>
+            <div className="overflow-x-auto pb-4">
+                <div className="min-w-[800px]">
+                    <div className="flex gap-1 mb-2">
+                        <div className="w-48 flex-shrink-0 font-bold text-slate-400 text-xs uppercase tracking-wider pl-2">Vazifalar</div>
+                        {Array.from({ length: daysInMonth }).map((_, i) => {
+                             const dateObj = new Date(year, month, i + 1);
+                             const dayOfWeek = dateObj.getDay();
+                             const isTargetDay = [2, 4, 6].includes(dayOfWeek);
+                             return (<div key={i} className={`flex-1 text-center text-xs font-bold w-8 flex-shrink-0 flex flex-col items-center gap-0.5 ${new Date(year, month, i + 1).toDateString() === new Date().toDateString() ? 'text-emerald-400' : 'text-slate-500'}`}><span>{i + 1}</span><div className={`w-1 h-1 rounded-full ${isTargetDay ? 'bg-indigo-500' : 'bg-transparent'}`}></div></div>);
+                        })}
+                    </div>
+                    <div className="space-y-1">
+                        {rows.map(row => (
+                            <div key={row.id} className="flex gap-1 items-center group">
+                                <div className="w-48 flex-shrink-0 flex justify-between items-center pr-4 text-sm font-medium text-slate-300 bg-slate-800/50 p-2 rounded-lg border border-slate-700/50"><span className="truncate">{row.title}</span><button onClick={() => deleteRow(row.id)} className="opacity-0 group-hover:opacity-100 text-slate-500 hover:text-rose-500 transition-all"><Trash2 size={14} /></button></div>
+                                {Array.from({ length: daysInMonth }).map((_, i) => {
+                                    const day = i + 1;
+                                    const key = `${row.id}-${year}-${month}-${day}`;
+                                    const status = trackerData[key];
+                                    const cellDate = new Date(year, month, day);
+                                    cellDate.setHours(0,0,0,0);
+                                    const today = new Date(); today.setHours(0,0,0,0);
+                                    const isToday = cellDate.getTime() === today.getTime();
+                                    let bgClass = "bg-slate-800/50 hover:bg-slate-700";
+                                    let content = "";
+                                    if (status === 'done') { bgClass = "bg-emerald-500 hover:bg-emerald-600 text-white"; content = "✓"; }
+                                    else if (status === 'missed') { bgClass = "bg-rose-500 hover:bg-rose-600 text-white"; content = "✕"; }
+                                    return (<div key={i} onClick={() => handleCellClick(row.id, day)} className={`flex-1 h-9 rounded-md flex items-center justify-center cursor-pointer transition-all border border-slate-700/30 text-sm font-bold select-none w-8 flex-shrink-0 ${bgClass} ${isToday ? 'ring-1 ring-emerald-500/50' : ''}`}>{content}</div>);
+                                })}
+                            </div>
+                        ))}
+                    </div>
+                    <div className="mt-4 flex gap-2 w-full max-w-xs"><input type="text" value={newRowTitle} onChange={(e) => setNewRowTitle(e.target.value)} placeholder="Yangi odat qo'shish..." className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-500" /><button onClick={addRow} className="bg-emerald-600 text-white p-2 rounded-lg hover:bg-emerald-700 transition-colors"><Plus size={18} /></button></div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const HomeworkModal = ({ onClose }) => {
+    const today = getTodayString();
+    const [selectedDate, setSelectedDate] = useState(today);
+    const [allTasks, setAllTasks] = useState(() => {
+        const saved = localStorage.getItem(STORAGE_KEYS.HOMEWORK);
+        return saved ? JSON.parse(saved) : {};
+    });
+    const [newTaskText, setNewTaskText] = useState("");
+    const [editingTaskId, setEditingTaskId] = useState(null);
+    const [editingTaskText, setEditingTaskText] = useState("");
+    const [showConfetti, setShowConfetti] = useState(false);
+
+    useEffect(() => { localStorage.setItem(STORAGE_KEYS.HOMEWORK, JSON.stringify(allTasks)); }, [allTasks]);
+
+    const tasksForDate = allTasks[selectedDate] || [];
+
+    const handleAddTask = () => { if (!newTaskText.trim()) return; const newTask = { id: Date.now(), text: newTaskText, completed: false }; setAllTasks(prev => ({ ...prev, [selectedDate]: [...(prev[selectedDate] || []), newTask] })); setNewTaskText(""); };
+    const handleToggleTask = (id) => { const isCompleting = !tasksForDate.find(t => t.id === id)?.completed; if (isCompleting) { setShowConfetti(true); setTimeout(() => setShowConfetti(false), 2500); } setAllTasks(prev => ({ ...prev, [selectedDate]: prev[selectedDate].map(t => t.id === id ? { ...t, completed: !t.completed } : t) })); };
+    const handleRemoveTask = (id) => { setAllTasks(prev => ({ ...prev, [selectedDate]: prev[selectedDate].filter(t => t.id !== id) })); };
+    const startEditing = (task) => { setEditingTaskId(task.id); setEditingTaskText(task.text); };
+    const saveEditing = () => { if (!editingTaskText.trim()) return; setAllTasks(prev => ({ ...prev, [selectedDate]: prev[selectedDate].map(t => t.id === editingTaskId ? { ...t, text: editingTaskText } : t) })); setEditingTaskId(null); setEditingTaskText(""); };
+    const changeDate = (days) => { const [y, m, d] = selectedDate.split('-').map(Number); const date = new Date(y, m - 1, d); date.setDate(date.getDate() + days); const year = date.getFullYear(); const month = String(date.getMonth() + 1).padStart(2, '0'); const day = String(date.getDate()).padStart(2, '0'); setSelectedDate(`${year}-${month}-${day}`); };
+    const completedCount = tasksForDate.filter(t => t.completed).length;
+    const totalCount = tasksForDate.length;
+    const progress = totalCount === 0 ? 0 : Math.round((completedCount / totalCount) * 100);
+
+    return (
+        <div className="fixed inset-0 z-[100] bg-slate-50 flex flex-col animate-in fade-in duration-200">
+            <Confetti active={showConfetti} />
+            <div className="bg-white border-b border-slate-200 p-4 shadow-sm flex items-center justify-between sticky top-0 z-10">
+                <div className="flex items-center gap-4"><button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full text-slate-500 transition-colors"><X size={24} /></button><h2 className="text-xl font-bold text-slate-900 flex items-center gap-2"><FileText className="text-indigo-600" /> Uy Vazifalari & Tracker</h2></div>
+                <div className="flex items-center gap-2 bg-slate-100 p-1 rounded-xl"><button onClick={() => changeDate(-1)} className="p-2 hover:bg-white rounded-lg text-slate-600 shadow-sm transition-all"><ChevronLeft size={20} /></button><div className="flex flex-col items-center min-w-[160px] relative"><span className="text-sm font-bold text-slate-800">{formatDateDisplay(selectedDate)}</span><input type="date" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} /></div><button onClick={() => changeDate(1)} className="p-2 hover:bg-white rounded-lg text-slate-600 shadow-sm transition-all"><ChevronRight size={20} /></button></div>
+                <div className="hidden sm:block">{selectedDate !== today && <Button variant="secondary" onClick={() => setSelectedDate(today)} className="text-xs h-9">Bugunga qaytish</Button>}</div>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4 lg:p-8 max-w-7xl mx-auto w-full">
+                <div className="bg-white rounded-3xl shadow-sm border border-slate-200 min-h-[400px] flex flex-col mb-8">
+                    <div className="p-6 border-b border-slate-100 flex flex-col gap-2"><div className="flex justify-between items-center"><h3 className="font-bold text-slate-800 text-lg">Kunlik Reja</h3><span className="text-xs font-bold text-indigo-500 bg-indigo-50 px-3 py-1 rounded-full">{totalCount} ta vazifa</span></div><div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden"><div className="bg-emerald-500 h-full transition-all duration-500 ease-out" style={{ width: `${progress}%` }}></div></div><div className="flex justify-end"><span className="text-[10px] font-bold text-slate-400">{progress}% Bajarildi</span></div></div>
+                    <div className="flex-1 p-6 space-y-3">
+                        {tasksForDate.length === 0 ? (<div className="h-full flex flex-col items-center justify-center text-slate-400 py-10"><Calendar size={48} className="mb-4 text-slate-200" /><p className="text-lg font-medium">Vazifalar yo'q</p></div>) : (
+                            tasksForDate.map(task => (<div key={task.id} className={`group flex items-center gap-4 p-4 rounded-2xl border transition-all duration-200 ${task.completed ? 'bg-emerald-50/50 border-emerald-100' : 'bg-white border-slate-100 hover:border-indigo-200 hover:shadow-md'}`}><button onClick={() => handleToggleTask(task.id)} className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${task.completed ? 'bg-emerald-500 border-emerald-500' : 'border-slate-300 hover:border-indigo-500'}`}>{task.completed && <CheckCircle2 size={16} className="text-white" />}</button><div className="flex-1">{editingTaskId === task.id ? (<div className="flex gap-2"><input autoFocus type="text" value={editingTaskText} onChange={(e) => setEditingTaskText(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && saveEditing()} className="flex-1 bg-white border border-indigo-300 rounded-lg px-3 py-1 text-sm focus:outline-none" /><button onClick={saveEditing} className="text-emerald-600 p-1 rounded"><Save size={18}/></button></div>) : (<span className={`text-base font-medium transition-all ${task.completed ? 'text-emerald-700 line-through decoration-emerald-300' : 'text-slate-700'}`}>{task.text}</span>)}</div>{editingTaskId !== task.id && (<div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity"><button onClick={() => startEditing(task)} className="p-2 text-slate-400 hover:text-indigo-600"><Edit2 size={18} /></button><button onClick={() => handleRemoveTask(task.id)} className="p-2 text-slate-400 hover:text-rose-600"><Trash2 size={18} /></button></div>)}</div>))
+                        )}
+                    </div>
+                    <div className="p-6 bg-slate-50 border-t border-slate-200 rounded-b-3xl"><div className="flex gap-4 items-center bg-white p-2 rounded-2xl shadow-sm border border-slate-200 focus-within:border-indigo-500 focus-within:ring-4 focus-within:ring-indigo-500/10 transition-all"><Plus size={24} className="text-slate-400 ml-2" /><input type="text" value={newTaskText} onChange={(e) => setNewTaskText(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleAddTask()} placeholder="Vazifa qo'shish..." className="flex-1 py-3 bg-transparent text-slate-700 font-medium placeholder:text-slate-400 focus:outline-none" /><Button onClick={handleAddTask} disabled={!newTaskText.trim()} className="h-10 px-6 shadow-none">Qo'shish</Button></div></div>
+                </div>
+                <MonthlyTracker selectedDate={selectedDate} />
+                <div className="h-10"></div> 
+            </div>
+        </div>
+    );
+};
+
+const InfoModal = ({ sectionKey, onClose, onStart }) => {
+    const data = IELTS_INFO[sectionKey];
+    if (!data) return null;
+    const colors = { blue: "text-blue-600 bg-blue-50 border-blue-100", emerald: "text-emerald-600 bg-emerald-50 border-emerald-100", orange: "text-orange-600 bg-orange-50 border-orange-100", purple: "text-purple-600 bg-purple-50 border-purple-100" };
+    const theme = colors[data.color] || colors.blue;
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-white w-full max-w-5xl max-h-[95vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
+                <div className={`p-6 border-b flex justify-between items-center ${theme.replace("text", "bg").split(' ')[1]}`}>
+                    <div className="flex items-center gap-4"><div className={`w-12 h-12 rounded-xl bg-white flex items-center justify-center shadow-md`}><data.icon className={theme.split(' ')[0]} size={24} /></div><div><h2 className="text-2xl font-bold text-slate-800">{data.title}</h2><div className="flex gap-4 text-xs font-bold text-slate-500 mt-1"><span className="flex items-center gap-1"><Clock size={14}/> {data.duration}</span><span className="flex items-center gap-1"><CheckSquare size={14}/> {data.questions}</span></div></div></div>
+                    <button onClick={onClose} className="p-2 bg-white/50 hover:bg-white rounded-full transition-colors"><X size={24} className="text-slate-600" /></button>
+                </div>
+                <div className="flex-1 overflow-y-auto p-6 lg:p-8 space-y-8 bg-slate-50/50">
+                    <section><h3 className="flex items-center gap-2 text-lg font-bold text-slate-900 mb-3"><Info size={20} className={theme.split(' ')[0]} /> Umumiy Ma'lumot</h3><p className="text-slate-600 leading-relaxed text-sm lg:text-base bg-white p-4 rounded-xl border border-slate-100 shadow-sm">{data.overview}</p></section>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <section><h3 className="flex items-center gap-2 text-lg font-bold text-slate-900 mb-4"><List size={20} className={theme.split(' ')[0]} /> Test Tuzilishi</h3><div className="space-y-3">{data.structure.map((item, i) => (<div key={i} className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow"><h4 className={`font-bold mb-1 text-sm ${theme.split(' ')[0]}`}>{item.title}</h4><p className="text-sm text-slate-600">{item.desc}</p></div>))}</div></section>
+                        <section><h3 className="flex items-center gap-2 text-lg font-bold text-slate-900 mb-4"><Lightbulb size={20} className="text-yellow-500" /> Muhim Maslahatlar</h3><ul className="space-y-3">{data.tips.map((tip, i) => (<li key={i} className="flex gap-3 text-sm text-slate-700 bg-white p-3 rounded-lg border border-slate-100 shadow-sm"><div className="min-w-[6px] h-[6px] rounded-full bg-yellow-400 mt-1.5"></div>{tip}</li>))}</ul></section>
+                    </div>
+                    <section>
+                         <h3 className="flex items-center gap-2 text-lg font-bold text-slate-900 mb-4">{data.scoring ? <Award size={20} className="text-rose-500" /> : <Scale size={20} className="text-rose-500" />}{data.scoring ? "Ballar Jadvali" : "Baholash Mezonlari"}</h3>
+                         {data.scoring ? (
+                            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden"><div className="grid grid-cols-2 bg-slate-100 p-3 text-sm font-bold text-slate-700"><div className="text-center">To'g'ri</div><div className="text-center text-indigo-600">Band</div></div>
+                            <div className="grid grid-cols-1 md:grid-cols-4">{Array.from({ length: 4 }).map((_, colIndex) => { const chunk = data.scoring.slice(colIndex * Math.ceil(data.scoring.length/4), (colIndex + 1) * Math.ceil(data.scoring.length/4)); return (<div key={colIndex}>{chunk.map((row, i) => (<div key={i} className="grid grid-cols-2 p-3 text-sm hover:bg-slate-50"><div className="text-center">{row.range}</div><div className="text-center font-bold text-indigo-600">{row.score}</div></div>))}</div>) })}</div></div>
+                         ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{data.criteria.map((item, i) => (<div key={i} className="bg-white p-4 rounded-xl border border-slate-200"><h4 className="font-bold">{item.name}</h4><p className="text-sm">{item.desc}</p></div>))}</div>
+                         )}
+                    </section>
+                </div>
+                <div className="p-4 border-t bg-white flex justify-end gap-3">
+                    <Button variant="secondary" onClick={onClose}>Yopish</Button>
+                    <Button onClick={() => onStart(sectionKey)} variant="primary" className={`!bg-${data.color}-600`}>Mashqni Boshlash</Button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// --- 6. SECTIONS ---
+// 7.1 Listening
+const ListeningSection = () => {
+    const [category, setCategory] = useState('numbers_1_10');
+    const [speed, setSpeed] = useState(1);
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [currentQ, setCurrentQ] = useState({ text: '', answer: '' });
+    const [answer, setAnswer] = useState('');
+    const [status, setStatus] = useState('idle'); 
+    const [timerMode, setTimerMode] = useState(0); 
+    const [timeLeft, setTimeLeft] = useState(0);
+    const inputRef = useRef(null);
+    const autoNextRef = useRef(null);
+    const timerIntervalRef = useRef(null);
+
+    const listeningOptions = [ { id: 'numbers_1_10', label: 'Raqamlar (1-10)' }, { id: 'numbers_10_100', label: 'Raqamlar (10-100)' }, { id: 'numbers_large', label: 'Raqamlar (100-2100)' }, { id: 'letters', label: 'Harflar (A-Z)' }, { id: 'letters_vowels', label: 'Unli Harflar' }, { id: 'phone', label: 'Telefon Raqam' }, { id: 'names', label: 'Ismlar (Spelling)' } ];
+    const autoCheckEnabled = ['numbers_1_10', 'numbers_10_100', 'numbers_large', 'letters', 'letters_vowels'].includes(category);
+    
+    useEffect(() => { return () => { clearTimeout(autoNextRef.current); clearInterval(timerIntervalRef.current); }; }, []);
+    useEffect(() => { if (!isPlaying && status === 'idle' && timerMode > 0 && timeLeft > 0) { timerIntervalRef.current = setInterval(() => { setTimeLeft(prev => { if (prev <= 1) { clearInterval(timerIntervalRef.current); check(); return 0; } return prev - 1; }); }, 1000); } return () => clearInterval(timerIntervalRef.current); }, [isPlaying, status, timerMode, timeLeft]);
+
+    const generate = () => { clearTimeout(autoNextRef.current); clearInterval(timerIntervalRef.current); let q = { text: '', answer: '', expectedLength: 0 }; switch(category) { case 'numbers_1_10': q = { t: `${randomInt(1,9)}` }; q.text = q.answer = q.t; q.expectedLength = 1; break; case 'numbers_10_100': q = { t: `${randomInt(10,99)}` }; q.text = q.answer = q.t; q.expectedLength = 2; break; case 'numbers_large': q = { t: `${randomInt(100,2100)}` }; q.text = q.answer = q.t; q.expectedLength = q.t.length; break; case 'letters': const c = String.fromCharCode(65 + randomInt(0,25)); q = { text: c, answer: c.toLowerCase(), expectedLength: 1 }; break; case 'letters_vowels': const vowels = ['A', 'E', 'I', 'O', 'U']; const v = vowels[randomInt(0, 4)]; q = { text: v, answer: v.toLowerCase(), expectedLength: 1 }; break; case 'phone': let p = "", sp = "Number: "; for(let i=0;i<10;i++) { let d=randomInt(0,9); p+=d; sp+=d+" "; if(i===2||i===5) sp+=", "; } q = { text: sp, answer: p, expectedLength: 10 }; break; case 'names': const n = NAMES_DB[randomInt(0, NAMES_DB.length-1)]; const s = n.split('').join('. '); q = { text: `Surname is ${n}. ${s}`, answer: n.toLowerCase(), display: n, expectedLength: n.length }; break; default: q = { text: '1', answer: '1', expectedLength: 1 }; } setCurrentQ(q); setAnswer(''); setStatus('idle'); setTimeout(() => { setIsPlaying(true); speak(q.text, speed); const audioDuration = q.text.length * 80 * (1/speed) + 500; setTimeout(() => { setIsPlaying(false); if (timerMode > 0) setTimeLeft(timerMode); }, audioDuration); if(inputRef.current) inputRef.current.focus(); }, 100); };
+    useEffect(() => { generate() }, [category]);
+    const replay = () => { setIsPlaying(true); speak(currentQ.text, speed); setTimeout(() => { setIsPlaying(false); if (timerMode > 0) setTimeLeft(timerMode); }, 500); inputRef.current?.focus(); };
+    const check = (e) => { clearInterval(timerIntervalRef.current); const inputAnswer = typeof e === 'string' ? e : (answer || ""); const finalAnswer = String(inputAnswer); if (!autoCheckEnabled && !finalAnswer) return; const correct = finalAnswer.trim().toLowerCase() === currentQ.answer.toString().toLowerCase(); setStatus(correct ? 'correct' : 'wrong'); const isHard = category === 'phone' || category === 'names'; const autoAdvance = timerMode > 0 || (autoCheckEnabled && !isHard); if (autoAdvance) { autoNextRef.current = setTimeout(generate, correct ? 800 : 2000); } };
+    const handleInputChange = (e) => { const value = e.target.value; setAnswer(value); if (autoCheckEnabled && status === 'idle') { if (currentQ.expectedLength > 0 && value.length === currentQ.expectedLength) { check(value); } } };
+
+    return (
+      <div className="h-full p-6 lg:p-10 max-w-5xl mx-auto flex flex-col">
+          <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4"><div><h2 className="text-2xl font-bold text-slate-900">Listening Simulyatori</h2><p className="text-slate-500">Tinglang va yozing.</p></div><div className="flex items-center gap-3 bg-white px-4 py-2 rounded-xl shadow-sm border border-slate-100"><span className="text-sm font-bold text-slate-600">Tezlik:</span><input type="range" min="0.5" max="1.5" step="0.1" value={speed} onChange={(e) => setSpeed(parseFloat(e.target.value))} className="w-24 accent-indigo-600" /><span className="text-xs font-bold bg-slate-100 px-2 py-1 rounded text-slate-600">{speed}x</span></div></div>
+          <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-0">
+              <Card className="lg:col-span-4 p-4 h-fit"><div className="relative"><select value={category} onChange={(e) => { setCategory(e.target.value); setTimerMode(0); }} className="w-full appearance-none bg-slate-50 border border-slate-200 text-slate-700 py-3 px-4 pr-10 rounded-xl font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500">{listeningOptions.map(opt => (<option key={opt.id} value={opt.id}>{opt.label}</option>))}</select><div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-500"><ChevronDown size={18} /></div></div></Card>
+              <Card className="lg:col-span-8 p-8 flex flex-col items-center justify-center relative min-h-[400px]">
+                  {['numbers_1_10', 'numbers_10_100', 'numbers_large', 'letters', 'letters_vowels'].includes(category) && (<div className="absolute top-6 left-6 flex items-center gap-2 bg-slate-50 p-1.5 rounded-lg border border-slate-100"><Timer size={16} className="text-slate-400 ml-1" />{[0, 3, 5, 7].map(time => (<button key={time} onClick={() => { setTimerMode(time); if(time===0) setTimeLeft(0); }} className={`text-xs font-bold px-3 py-1.5 rounded-md transition-all ${timerMode === time ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500 hover:bg-white hover:text-slate-700'}`}>{time === 0 ? 'OFF' : `${time}s`}</button>))}</div>)}
+                  <div className="mb-10 relative mt-8 lg:mt-0"><div className={`w-32 h-32 rounded-full flex items-center justify-center transition-all duration-300 ${isPlaying ? 'bg-indigo-100 text-indigo-600 scale-110 shadow-xl' : 'bg-slate-50 text-slate-400 border'}`}>{!isPlaying && timeLeft > 0 && status === 'idle' ? (<span className="text-4xl font-bold text-indigo-600 animate-pulse">{timeLeft}</span>) : (<Volume2 size={48} />)}</div>{isPlaying && (<div className="absolute inset-0 border-4 border-indigo-200 rounded-full animate-ping opacity-50"></div>)}</div>
+                  <div className="w-full max-w-md relative mb-8"><input ref={inputRef} type="text" value={answer} onChange={handleInputChange} onKeyDown={e => e.key === 'Enter' && status !== 'correct' && check()} disabled={status === 'correct'} placeholder="Javobni kiriting..." className={`w-full text-center text-3xl font-bold py-5 px-6 rounded-2xl border-2 outline-none transition-all shadow-sm ${status === 'idle' ? 'border-slate-200 focus:border-indigo-500' : ''} ${status === 'correct' ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : ''} ${status === 'wrong' ? 'border-rose-500 bg-rose-50 text-rose-700' : ''}`} /><div className="absolute right-4 top-1/2 -translate-y-1/2">{status === 'correct' && <CheckCircle2 className="text-emerald-500 animate-bounce" size={28} />}{status === 'wrong' && <AlertCircle className="text-rose-500 animate-pulse" size={28} />}</div></div>
+                  <div className="h-8 mb-8">{status === 'wrong' && (<div className="inline-flex items-center gap-2 px-4 py-2 bg-rose-100 text-rose-700 rounded-lg text-sm font-bold animate-in slide-in-from-bottom-2 fade-in"><X size={16} /> To'g'ri javob: {currentQ.display || currentQ.answer}</div>)}</div>
+                  <div className="flex gap-4"><Button variant="secondary" onClick={replay} className="w-14 h-14 !p-0 rounded-full"><RotateCcw size={20} /></Button>{status === 'wrong' || autoCheckEnabled ? (<Button variant="primary" onClick={generate} className="h-14 px-8 rounded-full text-lg shadow-xl" icon={ArrowRight}>Keyingisi</Button>) : (<Button variant="primary" onClick={check} disabled={!answer} className="h-14 px-10 rounded-full text-lg shadow-xl">Tekshirish</Button>)}</div>
+              </Card>
+          </div>
+      </div>
+    );
+};
+
+// 7.2 Reading
+const ReadingSection = () => (<div className="h-full flex flex-col items-center justify-center p-6 text-center text-slate-400"><div className="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mb-6"><BookOpen size={48} className="text-slate-300" /></div><h3 className="text-2xl font-bold text-slate-600 mb-2">Reading Bo'limi</h3><p className="text-slate-500 max-w-md">Bu bo'lim hozircha bo'sh. Tez orada yangi testlar va materiallar qo'shiladi.</p></div>);
+
+// 7.3 Grammar (NEW MUNDARIJA)
+const GrammarSection = () => {
+    const [expandedCategory, setExpandedCategory] = useState(null);
+    const [readerTopic, setReaderTopic] = useState(null);
+
+    const toggleCategory = (index) => {
+        if (expandedCategory === index) {
+            setExpandedCategory(null);
+        } else {
+            setExpandedCategory(index);
+        }
+    };
+
+    const openReader = (title) => {
+        let content = GRAMMAR_CONTENT_MAP[title];
+        
+        // Fallback search if direct map fails
+        if (!content) {
+            const key = Object.keys(GRAMMAR_CONTENT_MAP).find(k => k.includes(title) || title.includes(k));
+            if (key) content = GRAMMAR_CONTENT_MAP[key];
+        }
+        
+        setReaderTopic({ title, content });
+    };
+
+    return (
+        <>
+            <div className="h-full p-6 lg:p-10 max-w-5xl mx-auto flex flex-col overflow-hidden">
+                <div className="mb-8">
+                    <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-3">
+                        <GraduationCap className="text-indigo-600" size={32} />
+                        Grammatika Mundarijasi
+                    </h2>
+                    <p className="text-slate-500">Mavzularni o'rganish uchun tanlang</p>
+                </div>
+
+                <div className="flex-1 overflow-y-auto pr-2 space-y-3">
+                    {GRAMMAR_STRUCTURE.map((group, index) => (
+                        <div key={index} className="border border-slate-200 rounded-xl bg-white overflow-hidden shadow-sm transition-all duration-300 hover:shadow-md">
+                            <button 
+                                onClick={() => toggleCategory(index)}
+                                className={`w-full px-6 py-4 flex items-center justify-between text-left font-bold text-slate-700 hover:bg-slate-50 transition-colors ${expandedCategory === index ? 'bg-indigo-50 text-indigo-700' : ''}`}
+                            >
+                                <span className="text-base">{group.category}</span>
+                                {expandedCategory === index ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
+                            </button>
+                            
+                            {expandedCategory === index && (
+                                <div className="bg-slate-50/50 border-t border-slate-100">
+                                    {group.topics.map((topic, subIndex) => (
+                                        <div 
+                                            key={subIndex} 
+                                            onClick={() => openReader(topic)}
+                                            className="px-6 py-3 pl-10 text-sm text-slate-600 border-b border-slate-100 last:border-0 hover:bg-white hover:text-indigo-600 cursor-pointer transition-colors flex items-center gap-2"
+                                        >
+                                            <div className="w-1.5 h-1.5 rounded-full bg-indigo-300"></div>
+                                            {topic}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {readerTopic && (
+                <GrammarReader 
+                    topicTitle={readerTopic.title} 
+                    content={readerTopic.content} 
+                    onClose={() => setReaderTopic(null)} 
+                />
+            )}
+        </>
+    );
+};
+
+// 7.4 Writing
+const WritingSection = () => (<div className="h-full flex flex-col items-center justify-center p-6 text-center text-slate-400"><div className="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mb-6"><PenTool size={48} className="text-slate-300" /></div><h3 className="text-2xl font-bold text-slate-600 mb-2">Writing Bo'limi</h3><p className="text-slate-500 max-w-md">Bu bo'lim hozircha bo'sh. Tez orada yangi testlar va materiallar qo'shiladi.</p></div>);
+
+// 7.5 Speaking
+const SpeakingSection = () => (<div className="h-full flex flex-col items-center justify-center p-6 text-center text-slate-400"><div className="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mb-6"><Mic size={48} className="text-slate-300" /></div><h3 className="text-2xl font-bold text-slate-600 mb-2">Speaking Bo'limi</h3><p className="text-slate-500 max-w-md">Bu bo'lim hozircha bo'sh. Tez orada yangi testlar va materiallar qo'shiladi.</p></div>);
+
+// 7.6 Dashboard (Main Content View)
+const Dashboard = ({ setActiveTab, onOpenHomework }) => {
+  const [selectedSection, setSelectedSection] = useState(null);
+  const handleStartPractice = (section) => { setSelectedSection(null); setActiveTab(section); };
+  return (
+    <>
+        <div className="p-6 lg:p-10 max-w-7xl mx-auto space-y-8 animate-in fade-in duration-500 h-full overflow-y-auto">
+            <div onClick={onOpenHomework} className="w-full bg-white border-2 border-slate-200 border-dashed rounded-3xl p-8 flex flex-col items-center justify-center min-h-[200px] shadow-sm relative overflow-hidden group cursor-pointer hover:border-indigo-300 hover:bg-indigo-50/10 transition-all duration-300">
+                <div className="absolute inset-0 bg-slate-50/50 pattern-grid-lg opacity-20"></div>
+                <div className="z-10 text-center"><div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4 text-slate-400 group-hover:text-indigo-500 group-hover:bg-indigo-50 transition-colors transform group-hover:scale-110 duration-300 shadow-sm group-hover:shadow-md"><FileText size={32} /></div><h2 className="text-2xl font-bold text-slate-400 group-hover:text-slate-600 transition-colors">HOMEWORK & TRACKER</h2><p className="text-slate-400 text-sm mt-2 group-hover:text-indigo-500 font-medium transition-colors">Vazifalarni ko'rish va boshqarish uchun bosing</p></div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <Card className="p-6 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer group border-t-4 border-t-blue-500" onClick={() => setSelectedSection('listening')}><div className="flex justify-between items-start mb-6"><div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center shadow-blue-100 shadow-lg group-hover:scale-110 transition-transform"><Headphones size={28} /></div><span className="text-4xl font-black text-slate-100 group-hover:text-blue-50 transition-colors">L</span></div><h3 className="text-xl font-bold text-slate-900 mb-3">Listening</h3><p className="text-xs text-slate-500 line-clamp-3">30 daqiqa, 4 qism, 40 savol. Turli xil aksent va dialektlardagi yozuvlar.</p><div className="mt-4 flex items-center text-blue-600 text-xs font-bold gap-1 group-hover:gap-2 transition-all">Batafsil <ArrowRight size={14}/></div></Card>
+                <Card className="p-6 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer group border-t-4 border-t-emerald-500" onClick={() => setSelectedSection('reading')}><div className="flex justify-between items-start mb-6"><div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center shadow-emerald-100 shadow-lg group-hover:scale-110 transition-transform"><BookOpen size={28} /></div><span className="text-4xl font-black text-slate-100 group-hover:text-emerald-50 transition-colors">R</span></div><h3 className="text-xl font-bold text-slate-900 mb-3">Reading</h3><p className="text-xs text-slate-500 line-clamp-3">60 daqiqa, 3 ta uzun akademik matn. Skimming va scanning talab etiladi.</p><div className="mt-4 flex items-center text-emerald-600 text-xs font-bold gap-1 group-hover:gap-2 transition-all">Batafsil <ArrowRight size={14}/></div></Card>
+                <Card className="p-6 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer group border-t-4 border-t-orange-500" onClick={() => setSelectedSection('writing')}><div className="flex justify-between items-start mb-6"><div className="w-14 h-14 bg-orange-50 text-orange-600 rounded-2xl flex items-center justify-center shadow-orange-100 shadow-lg group-hover:scale-110 transition-transform"><PenTool size={28} /></div><span className="text-4xl font-black text-slate-100 group-hover:text-orange-50 transition-colors">W</span></div><h3 className="text-xl font-bold text-slate-900 mb-3">Writing</h3><p className="text-xs text-slate-500 line-clamp-3">60 daqiqa, 2 ta vazifa. Grafik tasvirlash va Esse yozish.</p><div className="mt-4 flex items-center text-orange-600 text-xs font-bold gap-1 group-hover:gap-2 transition-all">Batafsil <ArrowRight size={14}/></div></Card>
+                <Card className="p-6 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer group border-t-4 border-t-purple-500" onClick={() => setSelectedSection('speaking')}><div className="flex justify-between items-start mb-6"><div className="w-14 h-14 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center shadow-purple-100 shadow-lg group-hover:scale-110 transition-transform"><Mic size={28} /></div><span className="text-4xl font-black text-slate-100 group-hover:text-purple-50 transition-colors">S</span></div><h3 className="text-xl font-bold text-slate-900 mb-3">Speaking</h3><p className="text-xs text-slate-500 line-clamp-3">11-14 daqiqa, jonli suhbat. Tanishuv, Cue card va Munozara.</p><div className="mt-4 flex items-center text-purple-600 text-xs font-bold gap-1 group-hover:gap-2 transition-all">Batafsil <ArrowRight size={14}/></div></Card>
+            </div>
+        </div>
+        {selectedSection && <InfoModal sectionKey={selectedSection} onClose={() => setSelectedSection(null)} onStart={handleStartPractice} />}
+    </>
+  );
+};
+
+const Sidebar = ({ activeTab, setActiveTab, mobileOpen, setMobileOpen }) => {
+  const menu = [ { id: 'dashboard', icon: LayoutDashboard, label: 'Bosh Sahifa' }, { id: 'listening', icon: Headphones, label: 'Listening' }, { id: 'reading', icon: BookOpen, label: 'Reading' }, { id: 'grammar', icon: GraduationCap, label: 'Grammar' }, { id: 'writing', icon: PenTool, label: 'Writing' }, { id: 'speaking', icon: Mic, label: 'Speaking' } ];
+  return (
+    <>
+      {mobileOpen && <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-40 lg:hidden transition-opacity" onClick={() => setMobileOpen(false)} />}
+      <aside className={`fixed lg:static inset-y-0 left-0 z-50 w-72 bg-[#0f172a] text-slate-300 flex flex-col transition-transform duration-300 border-r border-slate-800 shadow-2xl ${mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
+        <div className="h-16 flex items-center px-6 border-b border-slate-800/50"><div className="flex items-center gap-3"><div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-indigo-500/20">I</div><span className="text-white font-bold text-lg tracking-wide">IELTS<span className="text-indigo-400">PRO</span></span></div><button onClick={() => setMobileOpen(false)} className="lg:hidden ml-auto text-slate-400 hover:text-white transition-colors bg-slate-800/50 p-2 rounded-lg"><X size={20} /></button></div>
+        <nav className="flex-1 px-4 space-y-2 mt-6 overflow-y-auto"><p className="px-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Asosiy Menyu</p>{menu.map(item => (<button key={item.id} onClick={() => { setActiveTab(item.id); setMobileOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-medium group relative overflow-hidden text-sm ${activeTab === item.id ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-900/50' : 'hover:bg-slate-800/50 hover:text-white text-slate-400'}`}>{activeTab === item.id && <div className="absolute left-0 top-0 bottom-0 w-1 bg-white/20"></div>}<item.icon size={18} className={`transition-colors ${activeTab === item.id ? 'text-white' : 'text-slate-500 group-hover:text-indigo-400'}`} /><span className="relative z-10">{item.label}</span>{activeTab === item.id && <ChevronRight size={14} className="ml-auto opacity-75" />}</button>))}</nav>
+        <div className="p-4 mt-auto"></div>
+      </aside>
+    </>
+  );
+};
+
+// --- 8. MAIN APP COMPONENT ---
+
+const App = () => {
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [showHomeworkModal, setShowHomeworkModal] = useState(false);
+  
+  const [activeUsers, setActiveUsers] = useState(() => {
+    const initial = localStorage.getItem(STORAGE_KEYS.ACTIVE_USERS);
+    const base = initial ? parseInt(initial) : 126;
+    return base + randomInt(-5, 5);
+  });
+  
+  const [goals, setGoals] = useState(() => {
+      const saved = localStorage.getItem(STORAGE_KEYS.GOALS);
+      if (saved) return JSON.parse(saved);
+      return [{ text: 'IELTS Imtihoni', date: '2026-03-01' }];
+  });
+
+  const [currentGoalIndex, setCurrentGoalIndex] = useState(0);
+  const [newGoalText, setNewGoalText] = useState('');
+  const [newGoalDate, setNewGoalDate] = useState('');
+  const [editingGoalIndex, setEditingGoalIndex] = useState(null);
+  const [editingGoalText, setEditingGoalText] = useState('');
+  const [editingGoalDate, setEditingGoalDate] = useState('');
+
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+  const [timeLeft, setTimeLeft] = useState('');
+  
+  const [birthDate, setBirthDate] = useState(() => localStorage.getItem(STORAGE_KEYS.BIRTH_DATE) || '');
+  const [lifeTime, setLifeTime] = useState(null);
+  const [isBirthPickerOpen, setIsBirthPickerOpen] = useState(false);
+
+  const [sessionSeconds, setSessionSeconds] = useState(0);
+  const [totalSeconds, setTotalSeconds] = useState(() => parseInt(localStorage.getItem(STORAGE_KEYS.TOTAL_TIME) || '0', 10));
+  const [showTotalTime, setShowTotalTime] = useState(false);
+
+  useEffect(() => { localStorage.setItem(STORAGE_KEYS.GOALS, JSON.stringify(goals)); }, [goals]);
+  useEffect(() => { localStorage.setItem(STORAGE_KEYS.BIRTH_DATE, birthDate); }, [birthDate]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+        setSessionSeconds(prev => prev + 1);
+        setTotalSeconds(prev => {
+            const next = prev + 1;
+            localStorage.setItem(STORAGE_KEYS.TOTAL_TIME, next.toString());
+            return next;
+        });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+      const toggleInterval = setInterval(() => { setShowTotalTime(prev => !prev); }, 5000);
+      return () => clearInterval(toggleInterval);
+  }, []);
+
+  useEffect(() => {
+      if (goals.length <= 1) return;
+      const interval = setInterval(() => { setCurrentGoalIndex(prev => (prev + 1) % goals.length); }, 5000); 
+      return () => clearInterval(interval);
+  }, [goals]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+        setActiveUsers(prev => {
+            const change = randomInt(-3, 3);
+            const newValue = Math.max(100, prev + change);
+            if (randomInt(1, 10) === 1) localStorage.setItem(STORAGE_KEYS.ACTIVE_USERS, newValue.toString());
+            return newValue;
+        });
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []); 
+
+  useEffect(() => {
+    const calculateTimeLeft = () => {
+        const currentGoal = goals[currentGoalIndex];
+        if (!currentGoal || !currentGoal.date) { setTimeLeft("Vaqt belgilanmagan"); return; }
+        const now = new Date();
+        const target = new Date(currentGoal.date);
+        target.setHours(9, 0, 0, 0); 
+        const diff = target - now;
+        setTimeLeft(formatCountdown(diff));
+    };
+
+    calculateTimeLeft();
+    const interval = setInterval(calculateTimeLeft, 1000);
+    return () => clearInterval(interval);
+  }, [currentGoalIndex, goals]);
+
+  useEffect(() => {
+    if (!birthDate) { setLifeTime(null); return; }
+    const updateLifeTime = () => { setLifeTime(calculateLifeTime(birthDate)); };
+    updateLifeTime();
+    const interval = setInterval(updateLifeTime, 1000);
+    return () => clearInterval(interval);
+  }, [birthDate]);
+
+  const handleBirthDateChange = (e) => { setBirthDate(e.target.value); };
+  const addGoal = () => { if (newGoalText.trim() && newGoalDate) { setGoals(prev => [...prev, { text: newGoalText.trim(), date: newGoalDate }]); setNewGoalText(''); setNewGoalDate(''); } };
+  const removeGoal = (index) => { setGoals(prev => { const updated = prev.filter((_, i) => i !== index); if (updated.length === 0) return [{ text: 'Yangi Maqsad', date: new Date().toISOString().split('T')[0] }]; return updated; }); setCurrentGoalIndex(0); };
+  const startEditingGoal = (index) => { setEditingGoalIndex(index); setEditingGoalText(goals[index].text); setEditingGoalDate(goals[index].date); };
+  const cancelEditingGoal = () => { setEditingGoalIndex(null); setEditingGoalText(''); setEditingGoalDate(''); };
+  const saveEditingGoal = () => { if (editingGoalText.trim() && editingGoalDate) { setGoals(prev => { const updated = [...prev]; updated[editingGoalIndex] = { text: editingGoalText.trim(), date: editingGoalDate }; return updated; }); setEditingGoalIndex(null); setEditingGoalText(''); setEditingGoalDate(''); } };
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'dashboard': return <Dashboard setActiveTab={setActiveTab} onOpenHomework={() => setShowHomeworkModal(true)} />;
+      case 'listening': return <ListeningSection />;
+      case 'reading': return <ReadingSection />;
+      case 'grammar': return <GrammarSection />;
+      case 'writing': return <WritingSection />;
+      case 'speaking': return <SpeakingSection />;
+      default: return <Dashboard setActiveTab={setActiveTab} onOpenHomework={() => setShowHomeworkModal(true)} />;
+    }
+  };
+
+  return (
+    <div className="flex h-screen bg-slate-50 font-sans text-slate-900 overflow-hidden">
+      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
+      <div className="flex-1 flex flex-col min-w-0 transition-all duration-300">
+        <header className="bg-white/90 backdrop-blur-md border-b border-slate-200 sticky top-0 z-30 px-4 h-16 flex items-center justify-between shadow-sm">
+            <div className="flex items-center gap-4">
+                 <button onClick={() => setMobileOpen(true)} className="lg:hidden p-2 hover:bg-slate-100 rounded-lg text-slate-600 transition-colors"><Menu size={20} /></button>
+                 <div className="lg:hidden flex items-center gap-2"><div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold">I</div></div>
+                 <div className="relative overflow-hidden w-32 h-9 bg-slate-100 rounded-lg border border-slate-200">
+                    <div className={`absolute inset-0 flex items-center justify-center gap-2 transition-transform duration-700 ease-in-out ${showTotalTime ? '-translate-y-full' : 'translate-y-0'}`}><History size={16} className="text-indigo-500" /><span className="text-sm font-mono font-bold tracking-wide text-slate-700">{formatSecondsToTime(sessionSeconds)}</span></div>
+                    <div className={`absolute inset-0 flex items-center justify-center gap-2 transition-transform duration-700 ease-in-out ${showTotalTime ? 'translate-y-0' : 'translate-y-full'}`}><Clock size={16} className="text-emerald-500" /><span className="text-sm font-mono font-bold tracking-wide text-slate-700">{formatSecondsToTime(totalSeconds)}</span></div>
+                 </div>
+            </div>
+            <div className="flex items-center gap-3 ml-auto">
+                 <div className="hidden sm:flex items-center gap-2 text-xs font-bold text-slate-600 bg-white px-3 py-1.5 rounded-lg border border-slate-200 hover:border-slate-300 transition-colors cursor-default shadow-sm"><div className="relative"><Users size={14} className="text-emerald-500" /><span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping opacity-75"></span></div><span>{activeUsers}</span></div>
+                 <div className="relative z-50">
+                    <button onClick={() => setIsBirthPickerOpen(!isBirthPickerOpen)} className={`flex items-center justify-center h-10 px-3 rounded-lg border transition-all cursor-pointer hover:shadow-md ${birthDate ? 'bg-white border-rose-200 text-rose-700' : 'bg-slate-50 border-slate-200 text-slate-500'}`}>
+                        {!birthDate ? (<div className="flex items-center gap-2"><Baby size={18} /><span className="text-xs font-bold">Tug'ilgan sana</span></div>) : (lifeTime && (<div className="text-[10px] sm:text-xs font-mono font-bold leading-tight text-center whitespace-nowrap overflow-hidden">{lifeTime.years}Y {lifeTime.months}M {lifeTime.days}D <span className="inline-block w-2"></span> {String(lifeTime.hours).padStart(2,'0')}:{String(lifeTime.minutes).padStart(2,'0')}:{String(lifeTime.seconds).padStart(2,'0')}</div>))}
+                    </button>
+                    {isBirthPickerOpen && (<><div className="fixed inset-0 z-40" onClick={() => setIsBirthPickerOpen(false)}></div><div className="absolute top-12 right-0 mt-2 w-72 bg-white rounded-xl shadow-xl border border-slate-100 p-4 z-50 animate-in fade-in slide-in-from-top-2"><h4 className="font-bold text-slate-900 mb-3 flex items-center gap-2 text-sm"><Baby size={16} className="text-rose-500"/> Tug'ilgan sana</h4><div><input type="date" value={birthDate} onChange={handleBirthDateChange} max={new Date().toISOString().split('T')[0]} className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm font-bold text-slate-700 focus:outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-500/10 transition-all" /></div>{birthDate && lifeTime && (<div className="mt-3 p-3 bg-rose-50 rounded-lg text-xs font-mono text-rose-800 space-y-1"><div className="flex justify-between"><span>Yillar:</span> <span>{lifeTime.years}</span></div><div className="flex justify-between"><span>Oylar:</span> <span>{lifeTime.months}</span></div><div className="flex justify-between"><span>Haftalar:</span> <span>{lifeTime.weeks}</span></div><div className="flex justify-between"><span>Kunlar:</span> <span>{lifeTime.days}</span></div><div className="pt-2 border-t border-rose-200 mt-2 text-center font-bold">{String(lifeTime.hours).padStart(2,'0')}:{String(lifeTime.minutes).padStart(2,'0')}:{String(lifeTime.seconds).padStart(2,'0')}</div></div>)}</div></>)}
+                 </div>
+                 <div className="relative z-50">
+                      <button onClick={() => setIsDatePickerOpen(!isDatePickerOpen)} className={`flex flex-col items-end justify-center h-10 px-3 rounded-lg border transition-all cursor-pointer hover:shadow-md min-w-[140px] overflow-hidden ${goals[currentGoalIndex]?.date ? 'bg-gradient-to-r from-indigo-50 to-violet-50 border-indigo-100' : 'bg-slate-50 border-slate-200'}`}>
+                          <div className={`flex items-center gap-2 text-xs font-bold ${goals[currentGoalIndex]?.date ? 'text-indigo-700' : 'text-slate-600'}`}>{goals[currentGoalIndex]?.date ? <Clock size={14} className={timeLeft ? "animate-pulse" : ""} /> : <Calendar size={14} />}<span>{goals[currentGoalIndex]?.date ? (timeLeft || "...") : "Vaqtni belgilang"}</span></div>
+                          <div className="h-4 relative w-full overflow-hidden">{goals.map((goal, idx) => (<span key={idx} className={`absolute top-0 right-0 text-[10px] font-bold uppercase tracking-wider transition-all duration-500 ease-in-out transform w-full text-right ${goals[currentGoalIndex]?.date ? 'text-indigo-400' : 'text-slate-400'} ${idx === currentGoalIndex ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 pointer-events-none'}`}>{goal.text}</span>))}{goals.length === 0 && <span className="text-[10px] text-slate-400 font-bold uppercase">Maqsad yo'q</span>}</div>
+                      </button>
+                      {isDatePickerOpen && (<><div className="fixed inset-0 z-40" onClick={() => setIsDatePickerOpen(false)}></div><div className="absolute top-12 right-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-slate-100 p-4 z-50 animate-in fade-in slide-in-from-top-2"><h4 className="font-bold text-slate-900 mb-3 flex items-center gap-2 text-sm"><Target size={16} className="text-indigo-600"/> Maqsadlar & Vaqt</h4><div className="space-y-4"><div><label className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 block">Maqsadlar ro'yxati</label><div className="space-y-2 mb-2 max-h-40 overflow-y-auto pr-1">{goals.map((g, i) => (<div key={i} className="flex flex-col bg-slate-50 p-2 rounded-lg text-xs font-bold text-slate-700 border border-slate-100 gap-1">{editingGoalIndex === i ? (<div className="flex flex-col gap-1 w-full"><input type="text" value={editingGoalText} onChange={(e) => setEditingGoalText(e.target.value)} className="flex-1 px-2 py-1 rounded border border-indigo-300 text-xs focus:outline-none" autoFocus placeholder="Nomi" /><div className="flex gap-1"><input type="date" value={editingGoalDate} onChange={(e) => setEditingGoalDate(e.target.value)} className="flex-1 px-2 py-1 rounded border border-indigo-300 text-xs focus:outline-none" /><button onClick={saveEditingGoal} className="text-emerald-500 hover:text-emerald-700"><Save size={14}/></button><button onClick={cancelEditingGoal} className="text-rose-500 hover:text-rose-700"><XCircle size={14}/></button></div></div>) : (<><div className="flex justify-between items-center w-full"><span className="truncate">{g.text}</span><div className="flex gap-1"><button onClick={() => startEditingGoal(i)} className="text-slate-400 hover:text-indigo-500 p-1"><Edit2 size={14}/></button><button onClick={() => removeGoal(i)} className="text-slate-400 hover:text-rose-500 p-1"><Trash2 size={14}/></button></div></div><span className="text-[10px] text-slate-400 font-mono">{g.date || "Sana yo'q"}</span></>)}</div>))}</div><div className="flex flex-col gap-2 mt-2 pt-2 border-t border-slate-100"><input type="text" value={newGoalText} onChange={(e) => setNewGoalText(e.target.value)} className="px-3 py-2 rounded-lg border border-slate-200 text-xs font-bold text-slate-700 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 placeholder:text-slate-300" placeholder="Yangi maqsad nomi..." /><div className="flex gap-2"><input type="date" value={newGoalDate} onChange={(e) => setNewGoalDate(e.target.value)} min={new Date().toISOString().split('T')[0]} className="flex-1 px-3 py-2 rounded-lg border border-slate-200 text-xs font-bold text-slate-700 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10" /><button onClick={addGoal} disabled={!newGoalText || !newGoalDate} className="bg-indigo-100 text-indigo-600 p-2 rounded-lg hover:bg-indigo-200 transition-colors disabled:opacity-50"><Plus size={16}/></button></div></div></div><Button variant="primary" onClick={() => setIsDatePickerOpen(false)} className="w-full py-2.5 shadow-md shadow-indigo-200 text-xs">Yopish</Button></div></div></>)}
+                             </div>
+                        </header>
+
+                        <main className="flex-1 overflow-auto scroll-smooth">
+                          {renderContent()}
+                        </main>
+                        {showHomeworkModal && <HomeworkModal onClose={() => setShowHomeworkModal(false)} />}
+                      </div>
+                    </div>
+                  );
+                };
+        
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
